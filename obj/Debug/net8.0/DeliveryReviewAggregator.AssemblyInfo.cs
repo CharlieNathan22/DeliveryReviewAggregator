@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DeliveryReviewAggregator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f0beb4690c5427a6f92b47d6bc9c4b0b7fdd11be")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+17a338106c37e70b84f365eed8ffebc23ca30cc2")]
 [assembly: System.Reflection.AssemblyProductAttribute("DeliveryReviewAggregator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DeliveryReviewAggregator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

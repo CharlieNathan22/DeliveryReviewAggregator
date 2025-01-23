@@ -97,3 +97,6 @@ docker-compose.override.yml
 # Python virtualenvs
 .vscode/
 .env/
+/DeliveryReviewAggregator.http
+/appsettings.json
+/DeliveryReviewAggregator.csproj.user
