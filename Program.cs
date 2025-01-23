@@ -1,4 +1,6 @@
 
+using DeliveryReviewAggregator.Services;
+
 namespace DeliveryReviewAggregator
 {
     public class Program
@@ -8,9 +10,11 @@ namespace DeliveryReviewAggregator
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
+            builder.Services.AddSingleton<MockRestaurantService>();
+            builder.Services.AddHttpClient<GooglePlacesService>();
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -24,9 +28,7 @@ namespace DeliveryReviewAggregator
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
 
             app.MapControllers();
 

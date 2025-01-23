@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\test\\source\\repos\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj": {}
+    "C:\\Users\\test\\Source\\Repos\\CharlieNathan22\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj": {}
   },
   "projects": {
-    "C:\\Users\\test\\source\\repos\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj": {
+    "C:\\Users\\test\\Source\\Repos\\CharlieNathan22\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\test\\source\\repos\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj",
+        "projectUniqueName": "C:\\Users\\test\\Source\\Repos\\CharlieNathan22\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj",
         "projectName": "DeliveryReviewAggregator",
-        "projectPath": "C:\\Users\\test\\source\\repos\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj",
+        "projectPath": "C:\\Users\\test\\Source\\Repos\\CharlieNathan22\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator.csproj",
         "packagesPath": "C:\\Users\\test\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\test\\source\\repos\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\obj\\",
+        "outputPath": "C:\\Users\\test\\Source\\Repos\\CharlieNathan22\\DeliveryReviewAggregator\\DeliveryReviewAggregator\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\test\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -40,6 +40,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "Microsoft.Extensions.Http": {
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.4.0, )"
