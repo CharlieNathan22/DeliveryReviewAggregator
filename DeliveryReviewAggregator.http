@@ -1,0 +1,6 @@
+@DeliveryReviewAggregator_HostAddress = http://localhost:5296
+
+GET {{DeliveryReviewAggregator_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
