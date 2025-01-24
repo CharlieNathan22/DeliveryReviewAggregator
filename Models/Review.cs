@@ -1,9 +1,8 @@
-﻿namespace DeliveryReviewAggregator.Models
+﻿namespace DeliveryReviewAggregator.Models;
+
+public class Review
 {
-    public class Review
-    {
-        public string AuthorName { get; set; } = string.Empty;
-        public string Text { get; set; } = string.Empty;
-        public double Rating { get; set; }
-    }
+    public string AuthorName { get; set; } = string.Empty;
+    public string Text { get; set; } = string.Empty;
+    public double Rating { get; set; }
 }

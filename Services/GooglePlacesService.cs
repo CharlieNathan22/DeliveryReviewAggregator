@@ -1,42 +1,79 @@
-﻿using DeliveryReviewAggregator.Models;
-using Newtonsoft.Json;
+﻿using DeliveryReviewAggregator.Clients;
+using DeliveryReviewAggregator.Models;
 
-namespace DeliveryReviewAggregator.Services
+namespace DeliveryReviewAggregator.Services;
+public class GooglePlacesService(IGooglePlacesClient googlePlacesClient) : IGooglePlacesService, IReviewService
 {
-    public class GooglePlacesService(HttpClient httpClient)
+    public async Task<ApiResponse<List<PlaceTextSearchResult>>> SearchRestaurantsAsync(string location, int radius = 1500)
     {
-        private readonly string apiKey = "AIzaSyBTOBvLtPe5Zh2GZsqFgGC73pArBFWHwqw";
-
-        public async Task<ApiResponse<GooglePlaceDetailsResponse>> GetReviewsAsync(string placeId)
+        if (string.IsNullOrWhiteSpace(location))
         {
-            var url = $"https://maps.googleapis.com/maps/api/place/details/json?placeid={placeId}&key={apiKey}";
-            var httpResponse = await httpClient.GetAsync(url);
-
-            if (!httpResponse.IsSuccessStatusCode)
+            return new ApiResponse<List<PlaceTextSearchResult>>
             {
-                return new ApiResponse<GooglePlaceDetailsResponse>()
-                {
-                    Success = false,
-                    ErrorMessage = httpResponse.ReasonPhrase
-                };
-            }
-            var result = await httpResponse.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<GooglePlaceDetailsResponse>(result);
-
-            if (data == null) {
-                return new ApiResponse<GooglePlaceDetailsResponse>
-                {
-                    Success = false,
-                    ErrorMessage = httpResponse.ReasonPhrase
-                };
-            }
-
-            return new ApiResponse<GooglePlaceDetailsResponse>
-            { 
-                Success = true,
-                Data = data
-
-            };            
+                Success = false,
+                ErrorMessage = "Location cannot be empty"
+            };
         }
+
+        var response = await googlePlacesClient.SearchRestaurantsAsync(location, radius);
+        if (!response.Success)
+        {
+            return new ApiResponse<List<PlaceTextSearchResult>>
+            {
+                Success = false,
+                ErrorMessage = response.ErrorMessage
+            };
+        }
+
+        return new ApiResponse<List<PlaceTextSearchResult>>
+        {
+            Success = true,
+            Data = response.Data?.Results
+        };
+    }
+
+    public async Task<ApiResponse<PlaceDetailsResult>> GetPlaceDetailsAsync(string placeId)
+    {
+        if (string.IsNullOrWhiteSpace(placeId))
+        {
+            return new ApiResponse<PlaceDetailsResult>
+            {
+                Success = false,
+                ErrorMessage = "PlaceId cannot be empty"
+            };
+        }
+
+        var response = await googlePlacesClient.GetPlaceDetailsAsync(placeId);
+        if (!response.Success)
+        {
+            return new ApiResponse<PlaceDetailsResult>
+            {
+                Success = false,
+                ErrorMessage = response.ErrorMessage
+            };
+        }
+
+        return new ApiResponse<PlaceDetailsResult>
+        {
+            Success = true,
+            Data = response.Data?.Result
+        };
+    }
+
+    public async Task<List<Review>> GetReviewsAsync(string placeId)
+    {
+        if (string.IsNullOrWhiteSpace(placeId))
+        {
+            throw new ArgumentException("PlaceId cannot be empty", nameof(placeId));
+        }
+
+        var response = await googlePlacesClient.GetPlaceDetailsAsync(placeId);
+        if (!response.Success || response.Data?.Result?.Reviews == null)
+        {
+            return [];
+        }
+
+        return response.Data.Result.Reviews;
     }
 }
+

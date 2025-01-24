@@ -1,36 +1,40 @@
-﻿using DeliveryReviewAggregator.Models;
-using DeliveryReviewAggregator.Services;
+﻿using DeliveryReviewAggregator.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DeliveryReviewAggregator.Controllers
+namespace DeliveryReviewAggregator.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class RestaurantsController(IGooglePlacesService googlePlacesService, IReviewAggregatorService reviewAggregatorService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class RestaurantsController(MockRestaurantService restaurantService, GooglePlacesService googlePlacesService) : ControllerBase
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchRestaurants([FromQuery] string location, [FromQuery] int radius = 1500)
     {
-        [HttpGet]
-        public IActionResult GetAllRestaurants()
+        var response = await googlePlacesService.SearchRestaurantsAsync(location, radius);
+        if (!response.Success)
         {
-            var restaurants = restaurantService.GetAllRestaurants();
-            return Ok(restaurants);
+            return BadRequest(response.ErrorMessage);
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Restaurant>> GetRestaurantReviewsById(int id)
+        return Ok(response.Data);
+    }
+
+    [HttpGet("{placeId}/reviews")]
+    public async Task<IActionResult> GetAggregatedReviews(string placeId)
+    {
+        var reviews = await reviewAggregatorService.GetAggregatedReviewsAsync(placeId);
+        return Ok(reviews);
+    }
+
+    [HttpGet("{placeId}/details")]
+    public async Task<IActionResult> GetRestaurantDetails(string placeId)
+    {
+        var response = await googlePlacesService.GetPlaceDetailsAsync(placeId);
+        if (!response.Success)
         {
-            var restaurant = restaurantService.GetRestaurantById(id);
-            if (restaurant == null)
-            {
-                return NotFound();
-            }
-
-            var googleReviews = await googlePlacesService.GetReviewsAsync("YOUR_GOOGLE_PLACE_ID");
-            if (googleReviews.Success)
-            {
-                restaurant.GoogleReviews = googleReviews.Data?.Result?.Reviews ?? [];
-            }
-
-            return Ok(restaurant);
+            return BadRequest(response.ErrorMessage);
         }
+
+        return Ok(response.Data);
     }
 }
