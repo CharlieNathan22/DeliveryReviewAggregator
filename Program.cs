@@ -37,6 +37,8 @@ public class Program
         app.UseHttpsRedirection();
         app.UseAuthorization();
 
+        app.UseMiddleware<ErrorHandlingMiddleware>();
+
         app.MapControllers();
 
         app.Run();
