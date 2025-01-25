@@ -13,7 +13,7 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
         var response = await googlePlacesService.SearchRestaurantsAsync(location, radius);
         if (!response.Success)
         {
-            return BadRequest(response.ErrorMessage);
+            return StatusCode((int)response.HttpStatusCode, response.Error);
         }
 
         return Ok(response.Data);
@@ -32,7 +32,7 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
         var response = await googlePlacesService.GetPlaceDetailsAsync(placeId);
         if (!response.Success)
         {
-            return BadRequest(response.ErrorMessage);
+            return StatusCode((int)response.HttpStatusCode, response.Error);
         }
 
         return Ok(response.Data);
