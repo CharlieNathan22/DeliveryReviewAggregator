@@ -1,5 +1,6 @@
 
 using DeliveryReviewAggregator.Clients;
+using DeliveryReviewAggregator.Configurations;
 using DeliveryReviewAggregator.Services;
 
 namespace DeliveryReviewAggregator;
@@ -9,6 +10,9 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.Configure<GooglePlacesSettings>(builder.Configuration.GetSection("GooglePlaces"));
+
 
         builder.Services.AddHttpClient<IGooglePlacesClient, GooglePlacesClient>(client =>
         {

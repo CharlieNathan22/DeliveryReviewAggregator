@@ -1,18 +1,39 @@
-﻿using DeliveryReviewAggregator.Models;
+﻿using DeliveryReviewAggregator.Configurations;
+using DeliveryReviewAggregator.Models;
+using Microsoft.Extensions.Options;
 using System.Net;
-using System.Net.Http;
 
 namespace DeliveryReviewAggregator.Clients;
 
-public class GooglePlacesClient(HttpClient httpClient) : IGooglePlacesClient
+public class GooglePlacesClient : IGooglePlacesClient
 {
-    private readonly string apiKey = "AIzaSyBTOBvLtPe5Zh2GZsqFgGC73pArBFWHwqw";
+    private readonly HttpClient httpClient;
+    private readonly string baseUrl;
+    private readonly string apiKey;
+
+    public GooglePlacesClient(HttpClient httpClient, IOptions<GooglePlacesSettings> settings)
+    {
+        this.httpClient = httpClient;
+        baseUrl = settings.Value.BaseUrl;
+        apiKey = settings.Value.ApiKey;
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new ArgumentNullException(nameof(apiKey), "Google Places API key is not configured.");
+        }
+
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            throw new ArgumentNullException(nameof(baseUrl), "Google Places Base URL is not configured.");
+        }
+    }
 
     public async Task<ApiResponse<GooglePlaceSearchResponse>> SearchRestaurantsAsync(string location, int radius)
     {
+        var url = $"{baseUrl}/textsearch/json?query=food+in+{location}&radius={radius}&type=restaurant&key={apiKey}";
+
         try
         {
-            var url = $"https://maps.googleapis.com/maps/api/place/textsearch/json?query=food+in+{location}&radius={radius}&type=restaurant&key={apiKey}";
             var response = await httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
@@ -46,9 +67,10 @@ public class GooglePlacesClient(HttpClient httpClient) : IGooglePlacesClient
 
     public async Task<ApiResponse<GooglePlaceDetailsResponse>> GetPlaceDetailsAsync(string placeId)
     {
+        var url = $"{baseUrl}/details/json?placeid={placeId}&key={apiKey}";
+
         try
         {
-            var url = $"https://maps.googleapis.com/maps/api/place/details/json?placeid={placeId}&key={apiKey}";
             var response = await httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
