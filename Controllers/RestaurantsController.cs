@@ -5,23 +5,24 @@ namespace DeliveryReviewAggregator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RestaurantsController(IGooglePlacesService googlePlacesService, IReviewAggregatorService reviewAggregatorService) : ControllerBase
+public class RestaurantsController(IGooglePlacesService googlePlacesService, IReviewAggregatorService reviewAggregatorService, ILogger<RestaurantsController> logger) : ControllerBase
 {
     [HttpGet("search")]
     public async Task<IActionResult> SearchRestaurants([FromQuery] string location, [FromQuery] int radius = 1500)
     {
-        var response = await googlePlacesService.SearchRestaurantsAsync(location, radius);
-        if (!response.Success)
-        {
-            return StatusCode((int)response.HttpStatusCode, response.Error);
-        }
+        logger.LogInformation("SearchRestaurants endpoint called with location: {Location} & radius: {Radius}", location, radius);
 
-        return Ok(response.Data);
+        var response = await googlePlacesService.SearchRestaurantsAsync(location, radius);
+        return !response.Success 
+            ? StatusCode((int)response.HttpStatusCode, response.Error) 
+            : Ok(response.Data);
     }
 
     [HttpGet("{placeId}/reviews")]
     public async Task<IActionResult> GetAggregatedReviews(string placeId)
     {
+        logger.LogInformation("GetAggregatedReviews endpoint called with location: {PlaceId}", placeId);
+
         var reviews = await reviewAggregatorService.GetAggregatedReviewsAsync(placeId);
         return Ok(reviews);
     }
@@ -29,12 +30,11 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
     [HttpGet("{placeId}/details")]
     public async Task<IActionResult> GetRestaurantDetails(string placeId)
     {
-        var response = await googlePlacesService.GetPlaceDetailsAsync(placeId);
-        if (!response.Success)
-        {
-            return StatusCode((int)response.HttpStatusCode, response.Error);
-        }
+        logger.LogInformation("GetRestaurantDetails endpoint called with location: {PlaceId}", placeId);
 
-        return Ok(response.Data);
+        var response = await googlePlacesService.GetPlaceDetailsAsync(placeId);
+        return !response.Success 
+            ? StatusCode((int)response.HttpStatusCode, response.Error) 
+            : Ok(response.Data);
     }
 }

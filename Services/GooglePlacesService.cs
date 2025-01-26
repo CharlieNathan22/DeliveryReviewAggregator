@@ -53,18 +53,15 @@ public class GooglePlacesService(IGooglePlacesClient googlePlacesClient) : IGoog
             );
         }
 
-        if (response.Data?.Result == null)
-        {
-            return ApiResponse<PlaceDetailsResult>.ErrorResponse("Place details not found.", HttpStatusCode.NotFound, "NOT_FOUND");
-        }
-
-        return ApiResponse<PlaceDetailsResult>.SuccessResponse(response.Data!.Result!);
+        return response.Data?.Result == null 
+            ? ApiResponse<PlaceDetailsResult>.ErrorResponse("Place details not found.", HttpStatusCode.NotFound, "NOT_FOUND") 
+            : ApiResponse<PlaceDetailsResult>.SuccessResponse(response.Data!.Result!);
     }
 
     public async Task<List<Review>> GetReviewsAsync(string placeId)
     {
         var detailsResponse = await GetPlaceDetailsAsync(placeId);
-        return detailsResponse.Success && detailsResponse.Data?.Reviews != null
+        return detailsResponse is { Success: true, Data.Reviews: not null }
             ? detailsResponse.Data.Reviews
             : [];
     }

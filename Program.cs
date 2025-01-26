@@ -1,7 +1,8 @@
-
 using DeliveryReviewAggregator.Clients;
 using DeliveryReviewAggregator.Configurations;
+using DeliveryReviewAggregator.Middleware;
 using DeliveryReviewAggregator.Services;
+using Serilog;
 
 namespace DeliveryReviewAggregator;
 
@@ -11,8 +12,15 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.Configure<GooglePlacesSettings>(builder.Configuration.GetSection("GooglePlaces"));
+        Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration) // Read settings from appsettings.json
+            .Enrich.FromLogContext()
+            .WriteTo.Console() // Log to console
+            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) // Log to file
+            .CreateLogger();
+        builder.Host.UseSerilog();
 
+        builder.Services.Configure<GooglePlacesSettings>(builder.Configuration.GetSection(GooglePlacesSettings.Section));
 
         builder.Services.AddHttpClient<IGooglePlacesClient, GooglePlacesClient>(client =>
         {
@@ -22,12 +30,11 @@ public class Program
         builder.Services.AddScoped<IReviewService, GooglePlacesService>();
         builder.Services.AddScoped<IReviewAggregatorService, ReviewAggregatorService>();
 
-        // Add services to the container.
         builder.Services.AddControllers();
+        builder.Services.AddSwaggerGen();
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
@@ -40,7 +47,6 @@ public class Program
         app.UseMiddleware<ErrorHandlingMiddleware>();
 
         app.MapControllers();
-
         app.Run();
     }
 }

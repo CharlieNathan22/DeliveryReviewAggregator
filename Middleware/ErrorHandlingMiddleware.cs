@@ -1,23 +1,18 @@
-﻿using DeliveryReviewAggregator.Models;
+﻿using DeliveryReviewAggregator.Controllers;
+using DeliveryReviewAggregator.Models;
+using Serilog;
 using System.Net;
 using System.Text.Json;
 
-namespace DeliveryReviewAggregator;
+namespace DeliveryReviewAggregator.Middleware;
 
-public class ErrorHandlingMiddleware
+public class ErrorHandlingMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public ErrorHandlingMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex)
         {
@@ -27,8 +22,7 @@ public class ErrorHandlingMiddleware
 
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        // Log the exception (use ILogger for structured logging)
-        Console.Error.WriteLine($"Unhandled exception: {exception.Message}");
+        Log.Error(exception, "An unhandled exception occurred.");
 
         var errorResponse = new ApiResponse<object>
         {
