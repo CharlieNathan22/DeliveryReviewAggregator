@@ -100,3 +100,5 @@ docker-compose.override.yml
 /DeliveryReviewAggregator.http
 /appsettings.json
 /DeliveryReviewAggregator.csproj.user
+/.env
+/appsettings.Development.json
