@@ -5,7 +5,7 @@ using System.Net;
 namespace DeliveryReviewAggregator.Services;
 public class GooglePlacesService(IGooglePlacesClient googlePlacesClient) : IGooglePlacesService, IReviewService
 {
-    public async Task<ApiResponse<List<PlaceSearchResult>>> SearchRestaurantsAsync(string location, int radius = 1500)
+    public async Task<ApiResponse<List<PlaceSearchResult>>> SearchRestaurantsAsync(string location, int radius = 10)
     {
         if (string.IsNullOrWhiteSpace(location))
         {
