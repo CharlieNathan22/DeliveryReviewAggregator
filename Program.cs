@@ -3,6 +3,7 @@ using DeliveryReviewAggregator.Configurations;
 using DeliveryReviewAggregator.Middleware;
 using DeliveryReviewAggregator.Services;
 using Serilog;
+using System.Reflection;
 
 namespace DeliveryReviewAggregator;
 
@@ -15,8 +16,8 @@ public class Program
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(builder.Configuration) // Read settings from appsettings.json
             .Enrich.FromLogContext()
-            .WriteTo.Console() // Log to console
-            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day) // Log to file
+            .WriteTo.Console()
+            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
         builder.Host.UseSerilog();
 
@@ -31,7 +32,12 @@ public class Program
         builder.Services.AddScoped<IReviewAggregatorService, ReviewAggregatorService>();
 
         builder.Services.AddControllers();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(options =>
+        {
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            options.IncludeXmlComments(xmlPath);
+        });
 
         var app = builder.Build();
 
