@@ -14,7 +14,7 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
     /// <param name="radius">The search radius in meters.</param>
     /// <returns>A list of restaurants.</returns>
     [HttpGet("search")]
-    public async Task<IActionResult> SearchRestaurants([FromQuery] string location, [FromQuery] int radius = 1500)
+    public async Task<IActionResult> SearchRestaurants([FromQuery] string location, [FromQuery] int radius = 10)
     {
         logger.LogInformation("SearchRestaurants endpoint called with location: {Location} & radius: {Radius}", location, radius);
 
