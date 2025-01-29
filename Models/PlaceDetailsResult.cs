@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ViewEngines;
-
-namespace DeliveryReviewAggregator.Models;
+﻿namespace DeliveryReviewAggregator.Models;
 
 public class PlaceDetailsResult
 {

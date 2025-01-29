@@ -1,8 +1,7 @@
-﻿using DeliveryReviewAggregator.Controllers;
+﻿using System.Net;
+using System.Text.Json;
 using DeliveryReviewAggregator.Models;
 using Serilog;
-using System.Net;
-using System.Text.Json;
 
 namespace DeliveryReviewAggregator.Middleware;
 

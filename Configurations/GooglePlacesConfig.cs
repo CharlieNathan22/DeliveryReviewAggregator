@@ -1,6 +1,6 @@
 ﻿namespace DeliveryReviewAggregator.Configurations;
 
-public class GooglePlacesSettings
+public class GooglePlacesConfig
 {
     public const string Section = "GooglePlaces";
     public string ApiKey { get; set; } = string.Empty;

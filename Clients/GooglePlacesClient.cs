@@ -1,18 +1,19 @@
-﻿using DeliveryReviewAggregator.Configurations;
+﻿using System.Net;
+using DeliveryReviewAggregator.Configurations;
 using DeliveryReviewAggregator.Models;
 using Microsoft.Extensions.Options;
-using System.Net;
 
 namespace DeliveryReviewAggregator.Clients;
 
 public class GooglePlacesClient : IGooglePlacesClient
 {
+    private readonly string _apiKey;
+    private readonly string _baseUrl;
     private readonly HttpClient _httpClient;
     private readonly ILogger<GooglePlacesClient> _logger;
-    private readonly string _baseUrl;
-    private readonly string _apiKey;
 
-    public GooglePlacesClient(HttpClient httpClient, IOptions<GooglePlacesSettings> settings, ILogger<GooglePlacesClient> logger)
+    public GooglePlacesClient(HttpClient httpClient, IOptions<GooglePlacesConfig> settings,
+        ILogger<GooglePlacesClient> logger)
     {
         _httpClient = httpClient;
         _baseUrl = settings.Value.BaseUrl;
@@ -35,7 +36,8 @@ public class GooglePlacesClient : IGooglePlacesClient
     public async Task<ApiResponse<GooglePlaceSearchResponse>> SearchRestaurantsAsync(string location, int radius)
     {
         var url = $"{_baseUrl}/textsearch/json?query=food+in+{location}&radius={radius}&type=restaurant&key={_apiKey}";
-        _logger.LogInformation("SearchRestaurantsAsync called with location: {Location}, radius: {Radius}", location, radius);
+        _logger.LogInformation("SearchRestaurantsAsync called with location: {Location}, radius: {Radius}", location,
+            radius);
 
         try
         {
@@ -43,7 +45,8 @@ public class GooglePlacesClient : IGooglePlacesClient
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("SearchRestaurantsAsync failed: HTTP {StatusCode} for URL: {Url}", response.StatusCode, url);
+                _logger.LogWarning("SearchRestaurantsAsync failed: HTTP {StatusCode} for URL: {Url}",
+                    response.StatusCode, url);
                 return ApiResponse<GooglePlaceSearchResponse>.ErrorResponse(
                     $"Failed to fetch restaurant data. HTTP {response.StatusCode}",
                     response.StatusCode
@@ -63,14 +66,17 @@ public class GooglePlacesClient : IGooglePlacesClient
                 );
             }
 
-            _logger.LogInformation("SearchRestaurantsAsync succeeded: Retrieved {ResultCount} results for location: {Location}",
+            _logger.LogInformation(
+                "SearchRestaurantsAsync succeeded: Retrieved {ResultCount} results for location: {Location}",
                 data.Results.Count, location);
 
             return ApiResponse<GooglePlaceSearchResponse>.SuccessResponse(data);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An exception occurred in SearchRestaurantsAsync() GooglePlacesClient for location: {Location}, radius: {Radius}", location, radius);
+            _logger.LogError(ex,
+                "An exception occurred in SearchRestaurantsAsync() GooglePlacesClient for location: {Location}, radius: {Radius}",
+                location, radius);
             return ApiResponse<GooglePlaceSearchResponse>.ErrorResponse(
                 $"An exception occurred: {ex.Message}",
                 HttpStatusCode.InternalServerError
@@ -89,7 +95,8 @@ public class GooglePlacesClient : IGooglePlacesClient
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger.LogWarning("GetPlaceDetailsAsync failed: HTTP {StatusCode} for URL: {Url}", response.StatusCode, url);
+                _logger.LogWarning("GetPlaceDetailsAsync failed: HTTP {StatusCode} for URL: {Url}", response.StatusCode,
+                    url);
                 return ApiResponse<GooglePlaceDetailsResponse>.ErrorResponse(
                     $"Failed to fetch place details. HTTP {response.StatusCode}",
                     response.StatusCode
@@ -99,7 +106,8 @@ public class GooglePlacesClient : IGooglePlacesClient
             var data = await response.Content.ReadFromJsonAsync<GooglePlaceDetailsResponse>();
             if (data is not { Status: "OK" })
             {
-                _logger.LogWarning("GooglePlaceTextSearch API returned non-OK status: {Status}. Error Message: {ErrorMessage}",
+                _logger.LogWarning(
+                    "GooglePlaceTextSearch API returned non-OK status: {Status}. Error Message: {ErrorMessage}",
                     data?.Status, data?.ErrorMessage);
                 return ApiResponse<GooglePlaceDetailsResponse>.ErrorResponse(
                     data?.ErrorMessage ?? "An unknown error occurred.",

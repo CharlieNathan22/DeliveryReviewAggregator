@@ -5,10 +5,13 @@ namespace DeliveryReviewAggregator.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RestaurantsController(IGooglePlacesService googlePlacesService, IReviewAggregatorService reviewAggregatorService, ILogger<RestaurantsController> logger) : ControllerBase
+public class RestaurantsController(
+    IGooglePlacesService googlePlacesService,
+    IReviewAggregatorService reviewAggregatorService,
+    ILogger<RestaurantsController> logger) : ControllerBase
 {
     /// <summary>
-    /// Searches for restaurants near the given location.
+    ///     Searches for restaurants near the given location.
     /// </summary>
     /// <param name="location">The location to search in.</param>
     /// <param name="radius">The search radius in meters.</param>
@@ -16,16 +19,17 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
     [HttpGet("search")]
     public async Task<IActionResult> SearchRestaurants([FromQuery] string location, [FromQuery] int radius = 10)
     {
-        logger.LogInformation("SearchRestaurants endpoint called with location: {Location} & radius: {Radius}", location, radius);
+        logger.LogInformation("SearchRestaurants endpoint called with location: {Location} & radius: {Radius}",
+            location, radius);
 
         var response = await googlePlacesService.SearchRestaurantsAsync(location, radius);
-        return !response.Success 
-            ? StatusCode((int)response.HttpStatusCode, response.Error) 
+        return !response.Success
+            ? StatusCode((int)response.HttpStatusCode, response.Error)
             : Ok(response.Data);
     }
 
     /// <summary>
-    /// Gets aggregated reviews for a given restaurant.
+    ///     Gets aggregated reviews for a given restaurant.
     /// </summary>
     /// <param name="placeId">The PlaceId of the restaurant provided by Google PlacesAPI.</param>
     /// <returns>A list of aggregated reviews from a certain restaurant.</returns>
@@ -39,7 +43,7 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
     }
 
     /// <summary>
-    /// Gets details from GooglePlaces API for a given restaurant.
+    ///     Gets details from GooglePlaces API for a given restaurant.
     /// </summary>
     /// <param name="placeId">The PlaceId of the restaurant provided by Google PlacesAPI.</param>
     /// <returns>Details on a specific restaurant.</returns>
@@ -49,8 +53,8 @@ public class RestaurantsController(IGooglePlacesService googlePlacesService, IRe
         logger.LogInformation("GetRestaurantDetails endpoint called with location: {PlaceId}", placeId);
 
         var response = await googlePlacesService.GetPlaceDetailsAsync(placeId);
-        return !response.Success 
-            ? StatusCode((int)response.HttpStatusCode, response.Error) 
+        return !response.Success
+            ? StatusCode((int)response.HttpStatusCode, response.Error)
             : Ok(response.Data);
     }
 }
