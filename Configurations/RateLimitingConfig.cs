@@ -2,6 +2,8 @@
 
 public class RateLimitingConfig
 {
+    public const string Section = "RateLimiting";
+
     public FixedWindowRateLimiterConfig? FixedWindow { get; set; }
     public ConcurrencyLimiterConfig? ConcurrencyLimit { get; set; }
 }

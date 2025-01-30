@@ -1,5 +1,6 @@
 using DeliveryReviewAggregator.Clients;
 using DeliveryReviewAggregator.Configurations;
+using DeliveryReviewAggregator.Factories;
 using DeliveryReviewAggregator.Middleware;
 using DeliveryReviewAggregator.Services;
 using Serilog;
@@ -32,15 +33,14 @@ public class Program
         builder.Services.AddScoped<IReviewService, GooglePlacesService>();
         builder.Services.AddScoped<IReviewAggregatorService, ReviewAggregatorService>();
 
-        // Bind RateLimitingConfig from appsettings.json
-        var rateLimitingConfig = builder.Configuration.GetSection("RateLimiting").Get<RateLimitingConfig>();
-
-        // Add Rate Limiting Services
+        var rateLimitingConfig = builder.Configuration.GetSection(RateLimitingConfig.Section).Get<RateLimitingConfig>()
+                                 ?? throw new InvalidOperationException("Rate limiting configuration is missing from appsettings");
         builder.Services.AddRateLimiter(options =>
         {
-            // Custom rejection response
-            options.OnRejected = (context, _) =>
+            options.OnRejected = async (context, _) =>
             {
+                Log.Warning("Rate limit exceeded. IP: {IP}, Endpoint: {Endpoint}", context.HttpContext.Connection.RemoteIpAddress, context.HttpContext.Request.Path);
+
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
                 {
                     context.HttpContext.Response.Headers.RetryAfter =
@@ -48,36 +48,21 @@ public class Program
                 }
 
                 context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-                return new ValueTask(context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", cancellationToken: _));
+                context.HttpContext.Response.ContentType = "application/json";
+
+                var response = new
+                {
+                    Message = "Too many requests. Please try again later.",
+                    RetryAfter = retryAfter.TotalSeconds
+                };
+
+                await context.HttpContext.Response.WriteAsJsonAsync(response, context.HttpContext.RequestAborted);
             };
 
             // Chained limiter combining Fixed Window and Concurrency
             options.GlobalLimiter = PartitionedRateLimiter.CreateChained(
-                PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-                {
-                    var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-                    return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ =>
-                        new FixedWindowRateLimiterOptions
-                        {
-                            PermitLimit = rateLimitingConfig!.FixedWindow!.PermitLimit,
-                            Window = TimeSpan.FromSeconds(rateLimitingConfig.FixedWindow.WindowSeconds),
-                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                            QueueLimit = rateLimitingConfig.FixedWindow.QueueLimit
-                        });
-                }),
-                PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
-                {
-                    var partitionKey = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-
-                    return RateLimitPartition.GetConcurrencyLimiter(partitionKey, _ =>
-                        new ConcurrencyLimiterOptions
-                        {
-                            PermitLimit = rateLimitingConfig!.ConcurrencyLimit!.PermitLimit,
-                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                            QueueLimit = rateLimitingConfig.ConcurrencyLimit.QueueLimit
-                        });
-                })
+                RateLimiterFactory.CreateFixedWindowLimiter(rateLimitingConfig),
+                RateLimiterFactory.CreateConcurrencyLimiter(rateLimitingConfig)
             );
         });
 
@@ -91,6 +76,7 @@ public class Program
 
         var app = builder.Build();
 
+        app.UseSerilogRequestLogging();
         app.UseRateLimiter();
 
         if (app.Environment.IsDevelopment())
